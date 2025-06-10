@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mark Report Image</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" rel="stylesheet">
+ <style>
+    body {
+        background-color: #000;
+        color: #fff;
+    }
+    canvas {
+        border: 2px solid #fff;
+        cursor: crosshair;
+        max-width: 100%;
+        display: block;
+        background-color: transparent; /* ✅ 關鍵：畫布保持透明 */
+    }
+    label, h3, p {
+        color: #fff;
+    }
+    .btn-primary {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+        font-weight: bold;
+    }
+    .form-control, textarea {
+        background-color: #222;
+        color: #fff;
+        border: 1px solid #444;
+    }
+    .form-control::placeholder,
+    textarea::placeholder {
+        color: #aaa;
+    }
+</style>
+
+</head>
+<body class="container py-4">
+    <h3>🖌️ Mark Defect</h3>
+    <p>🖼️ Original Photo：</p>
+    <img id="sourceImage" crossorigin="anonymous" style="display:none;" />
+    <canvas id="drawCanvas"></canvas>
+
+    <div class="mt-3">
+        <label>👤 Marked Person (markedBy):</label>
+        <input type="text" id="markedBy" class="form-control" placeholder="manager1" required>
+
+        <label class="mt-2">📝 Defect State (comment):</label>
+        <textarea id="comment" class="form-control" placeholder="Defect state on marked photo..." rows="2"></textarea>
+
+        <button class="btn btn-primary mt-3" onclick="uploadMarked()">✅ Upload Defect Photo</button>
+    </div>
+
+<script th:inline="javascript">
+    const reportId = [[${#strings.escapeJavaScript(reportId)}]];
+    const imageUrl = [[${#strings.escapeJavaScript(imageUrl).replace('\\x26', '&')}]];
+
+    const sourceImage = document.getElementById('sourceImage');
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+
+    console.log("🧪 DEBUG - reportId = ", reportId);
+    console.log("🧪 DEBUG - imageUrl = ", imageUrl);
+
+    sourceImage.onload = () => {
+        canvas.width = sourceImage.naturalWidth;
+        canvas.height = sourceImage.naturalHeight;
+        ctx.drawImage(sourceImage, 0, 0);
+    };
+    sourceImage.src = imageUrl;
+
+    let drawing = false;
+    canvas.addEventListener('mousedown', (e) => {
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    });
+    canvas.addEventListener('mouseup', () => {
+        drawing = false;
+        ctx.closePath();
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'red';
+        ctx.lineCap = 'round';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    });
+
+    async function uploadMarked() {
+        const markedBy = document.getElementById('markedBy').value;
+        const comment = document.getElementById('comment').value;
+        ctx.beginPath();
+        canvas.toBlob(function(blob) {
+            if (!blob) {
+                alert("❌ Failed to convert canvas to image.");
+                return;
+            }
+            const formData = new FormData();
+            formData.append("file", blob, reportId + ".png");
+            formData.append("markedBy", markedBy);
+            formData.append("comment", comment);
+            fetch(`/reports/${reportId}/upload-marked`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert("✅ Upload Success：" + data);
+            })
+            .catch(error => {
+                console.error("Upload error:", error);
+                alert("❌ Fail Upload。");
+            });
+        }, "image/png");
+    }
+</script>
+</body>
+</html>

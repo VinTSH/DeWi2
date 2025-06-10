@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Upload</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+<body>
+    <h1>Upload an Image</h1>
+    <p th:text="${message}"></p>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+    </form>
+    <script>
+    const eventSource = new EventSource('/notifications');
+    eventSource.onmessage = function (event) {
+        alert(event.data); // Pop-up message
+    };
+</script>
+</body>
+</html>
+

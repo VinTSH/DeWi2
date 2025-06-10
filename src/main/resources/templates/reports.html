@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Report List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('/img/page-bg.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+            background-color: rgba(0,0,0,0.3);
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .content-wrapper {
+            width: 100%;
+            max-width: 1300px;
+            background-color: #000;
+            padding: 2rem;
+            border-radius: 10px;
+            transform: translateX(-30px);
+        }
+        table img {
+            max-height: 80px;
+            border-radius: 6px;
+        }
+        .form-label {
+            margin-right: 5px;
+            font-weight: bold;
+            color: white;
+        }
+        .form-control, .table, .table th, .table td {
+            background-color: #111;
+            color: white;
+            border-color: #333;
+            font-weight: bold;
+        }
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        .btn-primary, .btn-success, .btn-danger {
+            background-color: #d4af37;
+            border-color: #d4af37;
+            color: #000;
+            font-weight: bold;
+        }
+        .btn-primary:hover, .btn-success:hover, .btn-danger:hover {
+            background-color: #c19d2a;
+            border-color: #c19d2a;
+        }
+        .action-btn {
+            margin: 2px;
+        }
+        .banner {
+            background-image: url('/img/banner.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 220px;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .banner-overlay {
+            background-color: rgba(0,0,0,0.5);
+            height: 100%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+        .info-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .info-card {
+            flex: 1 1 300px;
+            background: #111;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+        }
+        .info-card-icon {
+            font-size: 2.5rem;
+            color: #d4af37;
+            margin-right: 1rem;
+        }
+        .info-card-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+        }
+        .info-card-subtitle {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+    <div class="content-wrapper">
+        <div class="banner">
+            <div class="banner-overlay">
+                Concrete Report Management
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div th:if="${session.loggedInUser != null}" class="text-end mb-3">
+                    <span class="me-2"><i class="fas fa-user"></i> <b th:text="${session.loggedInUser.username}"></b></span> |
+                    <span th:if="${session.loggedInUser != null and session.loggedInUser.role == 'manager'}">
+                        <a href="/dashboard" class="text-white"><i class="fas fa-tools"></i> Manager Dashboard</a> |
+                    </span>
+                    <span th:if="${session.loggedInUser != null and session.loggedInUser.role == 'worker'}">
+                        <a href="/my-reports" class="text-white"><i class="fas fa-hard-hat"></i> My Reports</a> |
+                    </span>
+                    <a href="/logout" class="text-white"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+
+                <div th:if="${notLoggedIn}" class="alert alert-danger">You must be logged in to view reports.</div>
+
+                <div th:if="${session.loggedInUser != null}">
+                    <!-- Table and search form go here (omitted for brevity) -->
+                    <div th:if="${!#lists.isEmpty(reports)}">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Site</th>
+                                    <th>Batch</th>
+                                    <th>Timestamp</th>
+                                    <th>Worker</th>
+                                    <th>Weather</th>
+                                    <th>Confidence</th>
+                                    <th>Status</th>
+                                    <th>Comment</th>
+                                    <th th:if="${session.loggedInUser.role == 'manager'}">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="report : ${reports}">
+                                    <td th:text="${report.id}"></td>
+                                    <td>
+                                        <a th:if="${report.imageUrl != null}" th:href="${report.imageUrl}" target="_blank">
+                                            <img th:src="${report.imageUrl}" th:alt="${report.imageName}" class="img-thumbnail" />
+                                        </a>
+                                        <div th:text="${report.imageName}" class="small"></div>
+                                    </td>
+                                    <td th:text="${report.site}"></td>
+                                    <td th:text="${report.batchId}"></td>
+                                    <td th:text="${report.timestamp}"></td>
+                                    <td th:text="${report.workerId}"></td>
+                                    <td th:text="${report.weather}"></td>
+                                    <td th:text="${report.confidence}"></td>
+                                    <td th:text="${report.status}"></td>
+                                    <td th:text="${report.comment}"></td>
+                                    <td th:if="${session.loggedInUser.role == 'manager'}">
+                                        <form th:action="@{'/reports/' + ${report.id} + '/approve'}" method="post" class="d-flex mb-1">
+                                            <input type="text" class="form-control form-control-sm me-1" name="comment" placeholder="Comment" />
+                                            <button type="submit" class="btn btn-success btn-sm action-btn"><i class="fas fa-check"></i></button>
+                                        </form>
+                                        <form th:action="@{'/reports/' + ${report.id} + '/reject'}" method="post" class="d-flex mb-1">
+                                            <input type="text" class="form-control form-control-sm me-1" name="comment" placeholder="Comment" />
+                                            <button type="submit" class="btn btn-danger btn-sm action-btn"><i class="fas fa-times"></i></button>
+                                        </form>
+                                        <div class="d-flex mb-1">
+                                            <a th:href="@{'/reports/export/txt/' + ${report.id}}" target="_blank"
+                                               class="btn btn-outline-warning btn-sm action-btn me-1" title="Download TXT">
+                                                <i class="fas fa-file-alt"></i> TXT
+                                            </a>
+                                            <a th:href="@{'/reports/export/csv/' + ${report.id}}" target="_blank"
+                                               class="btn btn-outline-info btn-sm action-btn" title="Download CSV">
+                                                <i class="fas fa-file-csv"></i> CSV
+                                            </a>
+                                        </div>
+                                        <div class="mt-2">
+                                            <span th:if="${report.hasMarkedImage}" class="badge bg-success">Marked</span>
+                                            <a th:if="${!report.hasMarkedImage}" th:href="@{'/reports/draw/' + ${report.id}}" 
+                                               class="btn btn-sm btn-warning mt-1">✏️ Mark</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</body>
+</html>

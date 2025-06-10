@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAT - Model Accuracy Overview</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 40px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: #1c1c1c;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    }
+    h2, h5 {
+      color: #ffc107;
+      text-align: center;
+    }
+    canvas {
+      margin: 40px auto;
+      display: block;
+      max-width: 800px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📊 TensorFlow Model Accuracy Dashboard</h2>
+
+    <!-- Doughnut Chart -->
+    <h5>Overall Prediction Accuracy</h5>
+    <canvas id="doughnutChart"></canvas>
+
+    <!-- Line Chart -->
+    <h5>Daily Accuracy Rate (Last 5 Days)</h5>
+    <canvas id="lineChart"></canvas>
+
+    <!-- Bar Chart -->
+    <h5>Correct vs Error Predictions per Day</h5>
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <script>
+    // Doughnut Chart
+    new Chart(document.getElementById('doughnutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Correct Predictions', 'Errors'],
+        datasets: [{
+          data: [80, 20],
+          backgroundColor: ['#4caf50', '#f44336'],
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: false }
+        }
+      }
+    });
+
+    // Line Chart - Accuracy Rate over 5 days
+    new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels: ['2025-06-01', '2025-06-02', '2025-06-03', '2025-06-04', '2025-06-05'],
+        datasets: [{
+          label: 'Accuracy (%)',
+          data: [80, 86.7, 84.6, 83.3, 90],
+          fill: false,
+          borderColor: '#ffc107',
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Bar Chart - Correct vs Error per day
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: ['2025-06-01', '2025-06-02', '2025-06-03', '2025-06-04', '2025-06-05'],
+        datasets: [
+          {
+            label: 'Correct',
+            data: [8, 13, 11, 15, 18],
+            backgroundColor: '#4caf50'
+          },
+          {
+            label: 'Error',
+            data: [2, 2, 2, 3, 2],
+            backgroundColor: '#f44336'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
